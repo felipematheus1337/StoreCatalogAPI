@@ -26,10 +26,18 @@ namespace StoreCatalogAPI.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Categoria>> Get()
         {
-            return _context.Categorias.AsNoTracking().ToList();
+
+            try
+            {
+                return _context.Categorias.AsNoTracking().ToList();
+            } catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tratar a solicitação.");
+            }
+            
         }
 
-        [HttpGet("{id:int}", Name = "ObterCategoria")]
+        [HttpGet("{id:int:min(1)}", Name = "ObterCategoria")]
         public ActionResult<Categoria> Get(int id)
         {
 
