@@ -28,15 +28,7 @@ namespace StoreCatalogAPI.Controllers
         [ServiceFilter(typeof(ApiLoggingFilter))]
         public ActionResult<IEnumerable<Categoria>> Get()
         {
-
-            try
-            {
-                return _context.Categorias.AsNoTracking().ToList();
-            } catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tratar a solicitação.");
-            }
-            
+            return _context.Categorias.AsNoTracking().ToList();
         }
 
         [HttpGet("{id:int:min(1)}", Name = "ObterCategoria")]

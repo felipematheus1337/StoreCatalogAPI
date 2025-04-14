@@ -15,7 +15,7 @@ public class CustomLoggerProvider : ILoggerProvider
 
     public ILogger CreateLogger(string categoryName)
     {
-        return loggers.GetOrAdd(categoryName, name => new CustomerLogger(name, loggerConfig));   
+        return loggers.GetOrAdd(categoryName, name => new CustomLogger(name, loggerConfig));   
     }
 
     public void Dispose()
@@ -24,5 +24,3 @@ public class CustomLoggerProvider : ILoggerProvider
     }
 }
 
-
-}
