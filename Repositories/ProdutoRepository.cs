@@ -1,0 +1,16 @@
+﻿using StoreCatalogAPI.Context;
+using StoreCatalogAPI.Models;
+
+namespace StoreCatalogAPI.Repositories;
+
+public class ProdutoRepository : Repository<Produto>, IProdutoRepository
+{
+    public ProdutoRepository(AppDbContext context) : base(context)
+    {
+    }
+
+    public IEnumerable<Produto> GetProdutosPorCategoria(int id)
+    {
+        return GetAll().Where(c => c.CategoriaId == id);
+    }
+}

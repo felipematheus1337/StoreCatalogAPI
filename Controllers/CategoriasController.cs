@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using StoreCatalogAPI.Context;
 using StoreCatalogAPI.Filter;
 using StoreCatalogAPI.Models;
+using StoreCatalogAPI.Repositories;
 
 namespace StoreCatalogAPI.Controllers
 {
@@ -11,31 +10,29 @@ namespace StoreCatalogAPI.Controllers
     [ApiController]
     public class CategoriasController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IRepository<Categoria> _repository;
 
-        public CategoriasController(AppDbContext context)
+        public CategoriasController(ICategoriaRepository repo)
         {
-            _context = context;
+            _repository = repo;
         }
 
-        [HttpGet("produtos")]
-        public ActionResult<IEnumerable<Categoria>> GetCategoriasProdutos()
-        {
-            return _context.Categorias.Include(c => c.Produtos).AsNoTracking().ToList();
-        }
 
         [HttpGet]
         [ServiceFilter(typeof(ApiLoggingFilter))]
         public ActionResult<IEnumerable<Categoria>> Get()
         {
-            return _context.Categorias.AsNoTracking().ToList();
+            var categorias = _repository.GetAll();
+            return Ok(categorias);
+
+
         }
 
         [HttpGet("{id:int:min(1)}", Name = "ObterCategoria")]
         public ActionResult<Categoria> Get(int id)
         {
 
-            var categoria = _context.Categorias.FirstOrDefault(c => c.CategoriaId == id);
+            var categoria = _repository.Get(c => c.CategoriaId == id);
             if (categoria is null) return NotFound();
 
             return Ok(categoria);
@@ -48,10 +45,9 @@ namespace StoreCatalogAPI.Controllers
 
             if (categoria is null) return BadRequest();
 
-            _context.Categorias.Add(categoria);
-            _context.SaveChanges();
+            var categoriaCriada =  _repository.Create(categoria);
 
-            return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoria);
+            return new CreatedAtRouteResult("ObterCategoria", new { id = categoriaCriada.CategoriaId }, categoriaCriada);
 
         }
 
@@ -61,9 +57,7 @@ namespace StoreCatalogAPI.Controllers
         {
             if (id != categoria.CategoriaId) return BadRequest();
 
-            _context.Entry(categoria).State = EntityState.Modified;
-            _context.SaveChanges();
-
+            _repository.Update(categoria);
             return Ok(categoria);
 
         }
@@ -71,14 +65,13 @@ namespace StoreCatalogAPI.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var categoria = _context.Categorias.FirstOrDefault(p => p.CategoriaId == id);
+            var categoria = _repository.Get(c => c.CategoriaId == id);
             if (categoria is null) return NotFound("Categoria não localizada.");
 
 
-            _context.Categorias.Remove(categoria);
-            _context.SaveChanges();
+            var categoriaExcluida = _repository.Delete(categoria);
 
-            return Ok();
+            return Ok(categoriaExcluida);
 
 
         }
