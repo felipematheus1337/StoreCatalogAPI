@@ -1,0 +1,28 @@
+﻿using System.Collections.Concurrent;
+
+namespace StoreCatalogAPI.Logging;
+
+public class CustomLoggerProvider : ILoggerProvider
+
+{
+    readonly CustomLoggerProviderConfiguration loggerConfig;
+    readonly ConcurrentDictionary<string, CustomLogger> loggers = new ConcurrentDictionary<string, CustomLogger>();
+
+    public CustomLoggerProvider(CustomLoggerProviderConfiguration loggerConfig)
+    {
+        this.loggerConfig = loggerConfig;
+    }
+
+    public ILogger CreateLogger(string categoryName)
+    {
+        return loggers.GetOrAdd(categoryName, name => new CustomerLogger(name, loggerConfig));   
+    }
+
+    public void Dispose()
+    {
+        loggers.Clear();
+    }
+}
+
+
+}

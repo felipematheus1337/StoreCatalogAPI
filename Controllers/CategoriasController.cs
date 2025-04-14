@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StoreCatalogAPI.Context;
+using StoreCatalogAPI.Filter;
 using StoreCatalogAPI.Models;
 
 namespace StoreCatalogAPI.Controllers
@@ -24,6 +25,7 @@ namespace StoreCatalogAPI.Controllers
         }
 
         [HttpGet]
+        [ServiceFilter(typeof(ApiLoggingFilter))]
         public ActionResult<IEnumerable<Categoria>> Get()
         {
 
