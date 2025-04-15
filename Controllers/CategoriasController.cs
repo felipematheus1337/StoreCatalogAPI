@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using StoreCatalogAPI.DTOs;
 using StoreCatalogAPI.Filter;
 using StoreCatalogAPI.Models;
 using StoreCatalogAPI.Repositories;
@@ -11,55 +13,64 @@ namespace StoreCatalogAPI.Controllers
     public class CategoriasController : ControllerBase
     {
         private readonly IUnitOfWork _uof;
+        private readonly IMapper _mapper;
 
-        public CategoriasController(IUnitOfWork uof)
+        public CategoriasController(IUnitOfWork uof, IMapper mapper)
         {
             _uof = uof;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [ServiceFilter(typeof(ApiLoggingFilter))]
-        public ActionResult<IEnumerable<Categoria>> Get()
+        public ActionResult<IEnumerable<CategoriaDTO>> Get()
         {
             var categorias = _uof.CategoriaRepository.GetAll();
-            return Ok(categorias);
+            return Ok(_mapper.Map<CategoriaDTO>(categorias));
 
 
         }
 
         [HttpGet("{id:int:min(1)}", Name = "ObterCategoria")]
-        public ActionResult<Categoria> Get(int id)
+        public ActionResult<CategoriaDTO> Get(int id)
         {
 
             var categoria = _uof.CategoriaRepository.Get(c => c.CategoriaId == id);
             if (categoria is null) return NotFound();
 
-            return Ok(categoria);
+            return Ok(_mapper.Map<CategoriaDTO>(categoria));
 
         }
 
         [HttpPost]
-        public ActionResult Post(Categoria categoria)
+        public ActionResult<CategoriaDTO> Post(CategoriaDTO categoriaDto)
         {
 
-            if (categoria is null) return BadRequest();
+            if (categoriaDto is null) return BadRequest();
+
+            var categoria = _mapper.Map<Categoria>(categoriaDto);
 
             var categoriaCriada = _uof.CategoriaRepository.Create(categoria);
             _uof.Commit();
 
-            return new CreatedAtRouteResult("ObterCategoria", new { id = categoriaCriada.CategoriaId }, categoriaCriada);
+            var categoriaDtoCriada = _mapper.Map<CategoriaDTO>(categoriaCriada);
+
+            return new CreatedAtRouteResult("ObterCategoria", new { id = categoriaDtoCriada.CategoriaId }, categoriaDtoCriada);
 
         }
 
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Categoria categoria)
+        public ActionResult Put(int id, CategoriaDTO categoriaDto)
         {
-            if (id != categoria.CategoriaId) return BadRequest();
+            if (id != categoriaDto.CategoriaId) return BadRequest();
+
+            var categoria = _mapper.Map<Categoria>(categoriaDto);
 
             _uof.CategoriaRepository.Update(categoria);
             _uof.Commit();
-            return Ok(categoria);
+
+            return Ok(categoriaDto);
 
         }
 
