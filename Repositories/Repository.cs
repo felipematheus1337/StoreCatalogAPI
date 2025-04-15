@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using StoreCatalogAPI.Context;
 
 namespace StoreCatalogAPI.Repositories;
@@ -16,7 +17,6 @@ public class Repository<T> : IRepository<T> where T : class
     public T Create(T entity)
     {
         _context.Set<T>().Add(entity);
-        _context.SaveChanges();
         return entity;
     }
 
@@ -35,13 +35,12 @@ public class Repository<T> : IRepository<T> where T : class
 
     public IEnumerable<T> GetAll()
     {
-       return _context.Set<T>().ToList();
+       return _context.Set<T>().AsNoTracking().ToList();
     }
 
     public T Update(T entity)
     {
         _context.Set<T>().Update(entity);
-        _context.SaveChanges();
         return entity;
     }
 }
