@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using StoreCatalogAPI.Repositories;
 using StoreCatalogAPI.DTOs;
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace StoreCatalogAPI.Controllers;
 
@@ -58,6 +59,29 @@ public class ProdutosController : ControllerBase
         return Ok(produtoDto);
     }
 
+    [HttpPatch("{id}/UpdatePartial")]
+    public ActionResult<ProdutoDtoUpdateResponse> Patch(int id, JsonPatchDocument<ProdutoDtoUpdateRequest> patchProdutoDto)
+    {
+        if (patchProdutoDto is null || id <= 0) return BadRequest();
+
+        var produto = _uof.ProdutoRepository.Get(p => p.ProdutoId == id);
+        if (produto is null) return NotFound();
+
+        var produtoUpdateRequest = _mapper.Map<ProdutoDtoUpdateRequest>(produto);
+
+        patchProdutoDto.ApplyTo(produtoUpdateRequest);
+
+        if (!ModelState.IsValid || TryValidateModel(produtoUpdateRequest)) return BadRequest(ModelState);
+
+        _mapper.Map(produtoUpdateRequest, produto);
+
+        _uof.ProdutoRepository.Update(produto);
+        _uof.Commit();
+
+        return Ok(_mapper.Map<ProdutoDtoUpdateResponse>(produto));
+    }
+
+        
     [HttpPost]
     public ActionResult<ProdutoDTO> Post(ProdutoDTO produtoDto)
     {
@@ -65,7 +89,6 @@ public class ProdutosController : ControllerBase
         if (produtoDto is null) return BadRequest();
 
         var produto = _mapper.Map<Produto>(produtoDto);
-y.
         var novoProduto = _uof.ProdutoRepository.Create(produto);
         _uof.Commit();
 

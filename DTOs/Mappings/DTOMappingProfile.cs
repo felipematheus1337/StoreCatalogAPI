@@ -9,6 +9,8 @@ namespace StoreCatalogAPI.DTOs.Mappings
         public DTOMappingProfile() {
             CreateMap<Produto, ProdutoDTO>().ReverseMap();
             CreateMap<Categoria, CategoriaDTO>().ReverseMap();
+            CreateMap<Produto, ProdutoDtoUpdateRequest>().ReverseMap();
+            CreateMap<Produto, ProdutoDtoUpdateResponse>().ReverseMap();
         }
         
 

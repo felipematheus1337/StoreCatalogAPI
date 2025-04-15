@@ -25,7 +25,7 @@ public class CustomLogger : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        string mensagem = $"{logLevel.ToString()} : {eventId} - {formatter(state, exception)}"
+        string mensagem = $"{logLevel.ToString()} : {eventId} - {formatter(state, exception)}";
         EscreverTextoNoArquivo(mensagem);
     }
 
