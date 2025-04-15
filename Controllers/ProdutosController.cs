@@ -4,6 +4,8 @@ using StoreCatalogAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using StoreCatalogAPI.Repositories;
+using StoreCatalogAPI.DTOs;
+using AutoMapper;
 
 namespace StoreCatalogAPI.Controllers;
 
@@ -12,64 +14,80 @@ namespace StoreCatalogAPI.Controllers;
 public class ProdutosController : ControllerBase
 {
     private readonly IUnitOfWork _uof;
+    private readonly IMapper _mapper;
 
-    public ProdutosController(IUnitOfWork uof)
+    public ProdutosController(IUnitOfWork uof, IMapper mapper)
     {
         _uof = uof;
+        _mapper = mapper;
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<Produto>> Get()
+    public ActionResult<IEnumerable<ProdutoDTO>> Get()
     {
         var produtos = _uof.ProdutoRepository.GetAll();
 
         if (produtos is null) return NotFound("Produtos não encontrados.");
 
-        return Ok(produtos);
+        var produtosDTO = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
+
+        return Ok(produtosDTO);
     }
 
     [HttpGet("produtos/{id:int}")]
-    public ActionResult<IEnumerable<Produto>> GetByCategoriaId(int id)
+    public ActionResult<IEnumerable<ProdutoDTO>> GetByCategoriaId(int id)
     {
         var produtos = _uof.ProdutoRepository.GetProdutosPorCategoria(id);
 
         if (produtos is null) return NotFound($"Produtos não encontrados com a categoria: {id}.");
 
-        return Ok(produtos);
+        var produtosDTO = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
+
+        return Ok(produtosDTO);
     }
 
     [HttpGet("{id:int:min(1)}", Name="ObterProduto")]
-    public ActionResult<Produto> Get(int id)
+    public ActionResult<ProdutoDTO> Get(int id)
     {
         var produto = _uof.ProdutoRepository.Get(p => p.ProdutoId == id);
 
         if (produto is null) return NotFound();
 
-        return produto;
+        var produtoDto = _mapper.Map<ProdutoDTO>(produto);
+
+        return Ok(produtoDto);
     }
 
     [HttpPost]
-    public ActionResult Post(Produto produto)
+    public ActionResult<ProdutoDTO> Post(ProdutoDTO produtoDto)
     {
 
-        if (produto is null) return BadRequest();
+        if (produtoDto is null) return BadRequest();
+
+        var produto = _mapper.Map<Produto>(produtoDto);
 y.
         var novoProduto = _uof.ProdutoRepository.Create(produto);
         _uof.Commit();
 
-        return new CreatedAtRouteResult("ObterProduto", new { id = novoProduto.ProdutoId }, novoProduto);
+        var novoProdutoDto = _mapper.Map<ProdutoDTO>(novoProduto);
+
+        return new CreatedAtRouteResult("ObterProduto", new { id = novoProdutoDto.ProdutoId }, novoProdutoDto);
         
     }
 
     [HttpPut("{id:int:min(1)}")]
-    public ActionResult Put(int id, Produto produto)
+    public ActionResult<ProdutoDTO> Put(int id, ProdutoDTO produtoDto)
     {
-        if (id != produto.ProdutoId) return BadRequest();
+        if (id != produtoDto.ProdutoId) return BadRequest();
+
+        var produto = _mapper.Map<Produto>(produtoDto);
 
         var produtoAtualizado = _uof.ProdutoRepository.Update(produto);
         _uof.Commit();
 
-        if (produtoAtualizado is not null) return Ok(produto);
+        var produtoDtoAtualizado = _mapper.Map<ProdutoDTO>(produtoAtualizado);
+
+        if (produtoAtualizado is not null) return Ok(produtoDtoAtualizado);
 
         return StatusCode(500, $"Falha ao atualizar o produto com id {id}");
 

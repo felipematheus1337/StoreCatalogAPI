@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using StoreCatalogAPI.Context;
+using StoreCatalogAPI.DTOs.Mappings;
 using StoreCatalogAPI.Extensions;
 using StoreCatalogAPI.Filter;
 using StoreCatalogAPI.Logging;
@@ -30,6 +31,8 @@ builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderCon
 {
     LogLevel = LogLevel.Information
 }));
+
+builder.Services.AddAutoMapper(typeof(DTOMappingProfile));
 
 var app = builder.Build();
 
