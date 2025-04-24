@@ -7,6 +7,8 @@ using StoreCatalogAPI.Repositories;
 using StoreCatalogAPI.DTOs;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
+using StoreCatalogAPI.Pagination;
+using Newtonsoft.Json;
 
 namespace StoreCatalogAPI.Controllers;
 
@@ -79,6 +81,32 @@ public class ProdutosController : ControllerBase
         _uof.Commit();
 
         return Ok(_mapper.Map<ProdutoDtoUpdateResponse>(produto));
+    }
+
+
+    [HttpGet("pagination")]
+    public ActionResult<IEnumerable<ProdutoDTO>> Get([FromQuery] ProdutosParameters produtoParameters)
+    {
+
+        var produtos = _uof.ProdutoRepository.GetProdutosPaginados(produtoParameters);
+
+        if (produtos is null) return NoContent();
+
+        var metaData = new
+        {
+            produtos.TotalCount,
+            produtos.PageSize,
+            produtos.CurrentPage,
+            produtos.TotalPages,
+            produtos.HasNext,
+            produtos.HasPrevious,
+        };
+
+        Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metaData));
+
+        var produtosDto = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
+
+        return Ok(produtosDto);
     }
 
         

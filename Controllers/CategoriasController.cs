@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using StoreCatalogAPI.DTOs;
 using StoreCatalogAPI.Filter;
 using StoreCatalogAPI.Models;
+using StoreCatalogAPI.Pagination;
 using StoreCatalogAPI.Repositories;
 
 namespace StoreCatalogAPI.Controllers
@@ -40,6 +42,31 @@ namespace StoreCatalogAPI.Controllers
 
             return Ok(_mapper.Map<CategoriaDTO>(categoria));
 
+        }
+
+        [HttpGet("pagination")]
+        public ActionResult<IEnumerable<CategoriaDTO>> Get([FromQuery] CategoriasParameters categoriaParameters)
+        {
+
+            var categorias = _uof.CategoriaRepository.GetCategorias(categoriaParameters);
+
+            if (categorias is null) return NoContent();
+
+            var metaData = new
+            {
+                categorias.TotalCount,
+                categorias.PageSize,
+                categorias.CurrentPage,
+                categorias.TotalPages,
+                categorias.HasNext,
+                categorias.HasPrevious,
+            };
+
+            Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metaData));
+
+            var categoriasDto = _mapper.Map<IEnumerable<CategoriaDTO>>(categorias);
+
+            return Ok(categoriasDto);
         }
 
         [HttpPost]
