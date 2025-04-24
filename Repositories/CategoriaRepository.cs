@@ -11,11 +11,13 @@ public class CategoriaRepository : Repository<Categoria>, ICategoriaRepository
     {
     }
 
-    public PagedList<Categoria> GetCategorias(CategoriasParameters categoriasParameters)
+    public async Task<PagedList<Categoria>> GetCategoriasAsync(CategoriasParameters categoriasParameters)
     {
-        var categorias = GetAll().OrderBy(c => c.CategoriaId).AsQueryable();
+        var categorias = await GetAllAsync();
 
-        return PagedList<Categoria>.ToPagedList(categorias, categoriasParameters.PageNumber,
+        var categoriasOrdenadas = categorias.OrderBy(c => c.CategoriaId).AsQueryable();
+
+        return PagedList<Categoria>.ToPagedList(categoriasOrdenadas, categoriasParameters.PageNumber,
             categoriasParameters.PageSize);
 
     }

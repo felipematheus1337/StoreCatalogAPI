@@ -25,19 +25,19 @@ namespace StoreCatalogAPI.Controllers
 
         [HttpGet]
         [ServiceFilter(typeof(ApiLoggingFilter))]
-        public ActionResult<IEnumerable<CategoriaDTO>> Get()
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> Get()
         {
-            var categorias = _uof.CategoriaRepository.GetAll();
+            var categorias = await _uof.CategoriaRepository.GetAllAsync();
             return Ok(_mapper.Map<CategoriaDTO>(categorias));
 
 
         }
 
         [HttpGet("{id:int:min(1)}", Name = "ObterCategoria")]
-        public ActionResult<CategoriaDTO> Get(int id)
+        public async Task<ActionResult<CategoriaDTO>> Get(int id)
         {
 
-            var categoria = _uof.CategoriaRepository.Get(c => c.CategoriaId == id);
+            var categoria = await _uof.CategoriaRepository.GetAsync(c => c.CategoriaId == id);
             if (categoria is null) return NotFound();
 
             return Ok(_mapper.Map<CategoriaDTO>(categoria));
@@ -45,10 +45,10 @@ namespace StoreCatalogAPI.Controllers
         }
 
         [HttpGet("pagination")]
-        public ActionResult<IEnumerable<CategoriaDTO>> Get([FromQuery] CategoriasParameters categoriaParameters)
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> Get([FromQuery] CategoriasParameters categoriaParameters)
         {
 
-            var categorias = _uof.CategoriaRepository.GetCategorias(categoriaParameters);
+            var categorias = await _uof.CategoriaRepository.GetCategoriasAsync(categoriaParameters);
 
             if (categorias is null) return NoContent();
 
@@ -70,7 +70,7 @@ namespace StoreCatalogAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<CategoriaDTO> Post(CategoriaDTO categoriaDto)
+        public async Task<ActionResult<CategoriaDTO>> Post(CategoriaDTO categoriaDto)
         {
 
             if (categoriaDto is null) return BadRequest();
@@ -78,7 +78,7 @@ namespace StoreCatalogAPI.Controllers
             var categoria = _mapper.Map<Categoria>(categoriaDto);
 
             var categoriaCriada = _uof.CategoriaRepository.Create(categoria);
-            _uof.Commit();
+            await _uof.CommitAsync();
 
             var categoriaDtoCriada = _mapper.Map<CategoriaDTO>(categoriaCriada);
 
@@ -88,28 +88,28 @@ namespace StoreCatalogAPI.Controllers
 
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, CategoriaDTO categoriaDto)
+        public async Task<ActionResult> Put(int id, CategoriaDTO categoriaDto)
         {
             if (id != categoriaDto.CategoriaId) return BadRequest();
 
             var categoria = _mapper.Map<Categoria>(categoriaDto);
 
             _uof.CategoriaRepository.Update(categoria);
-            _uof.Commit();
+            await _uof.CommitAsync();
 
             return Ok(categoriaDto);
 
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var categoria = _uof.CategoriaRepository.Get(c => c.CategoriaId == id);
+            var categoria = await _uof.CategoriaRepository.GetAsync(c => c.CategoriaId == id);
             if (categoria is null) return NotFound("Categoria não localizada.");
 
 
             var categoriaExcluida =  _uof.CategoriaRepository.Delete(categoria);
-            _uof.Commit();
+            await _uof.CommitAsync();
 
             return Ok(categoriaExcluida);
 
